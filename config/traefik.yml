@@ -1,0 +1,35 @@
+log:
+  format: json
+
+accessLog:
+  format: json
+  fields:
+    defaultMode: drop
+    names:
+      time: keep
+      ClientHost: keep
+      ClientPort: keep
+      RequestHost: keep
+      RequestMethod: keep
+      RequestPath: keep
+    headers:
+      defaultMode: drop
+      names:
+        User-Agent: keep
+        Referer: keep
+ 
+api: {}
+
+entryPoints:
+  web:
+    address: ":80"
+  
+  websecure:
+    address: ":443"
+
+providers:
+  file:
+    filename: "/etc/traefik/dynamic-conf.yml"
+
+  docker:
+    exposedByDefault: false

@@ -1,0 +1,84 @@
+http:
+  # --- ROUTERS --- #
+  routers:
+    api-redirect:
+      rule: "Host(`traefik.dev.webnsurf.com`) || Host(`traefik.staging.webnsurf.com`) || Host(`traefik.webnsurf.com`)"
+      entryPoints:
+        - "web"
+      service: "api@internal"
+      middlewares:
+        - "https-redirect"
+    api:
+      rule: "Host(`traefik.dev.webnsurf.com`) || Host(`traefik.staging.webnsurf.com`) || Host(`traefik.webnsurf.com`)"
+      entryPoints:
+        - "websecure"
+      service: "api@internal"
+      middlewares:
+        - "myAuth"
+      tls: {}
+
+    jenkins-redirect:
+      rule: "Host(`jenkins.webnsurf.com`)"
+      entryPoints:
+        - "web"
+      service: "jenkins"
+      middlewares:
+        - "https-redirect"
+
+    jenkins:
+      rule: "Host(`jenkins.webnsurf.com`)"
+      entryPoints:
+        - "websecure"
+      service: "jenkins"
+      tls: {}
+
+
+  # --- SERVICES --- #
+  services:
+    jenkins:
+      loadBalancer:
+        servers:
+          - url: "http://172.17.0.1:8080"
+        
+
+  # --- MIDDLEWARES --- #
+  middlewares:
+    myAuth:
+      basicAuth:
+        users:
+          - "admin:$2y$12$Hid/EHWiAnJppWrWR.F6suGoUDAFmVSmbNvsbdll9m5i/e/2W6hQa"
+          #  admin:test1234 - update this with a new Bcrypt hash (https://bcrypt-generator.com/)
+
+    https-redirect:
+      redirectScheme:
+        scheme: "https"
+        permanent: true
+
+    https-strip-slash:
+      redirectRegex:
+        regex: "https?://(.+)/(.*)/$"
+        replacement: "https://${1}/${2}"
+        permanent: true
+
+    full-redirect:
+      redirectRegex:
+        regex: "https?://(www\\.)?(.+)/(.*)"
+        replacement: "https://www.${2}/${3}"
+        permanent: true
+
+    full-strip-slash:
+      redirectRegex:
+        regex: "https?://(www\\.)?(.+)/(.*)/$"
+        replacement: "https://www.${2}/${3}"
+        permanent: true
+
+
+tls:
+  certificates:
+    - certFile: "/etc/traefik/certs/webnsurf.com/fullchain.cer"
+      keyFile: "/etc/traefik/certs/webnsurf.com/webnsurf.com.key"
+
+  # If you need to support more domains add their certificate files to /config/certs/domain_name.com/
+  # and list them here (same as webnsurf certificate is listed above):
+    # - certFile: "/etc/traefik/certs/domain_name.com/fullchain.cer"
+    # - keyFile: "/etc/traefik/certs/domain_name.com/domain_name.com.key"
