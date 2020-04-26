@@ -16,29 +16,6 @@ http:
       middlewares:
         - "myAuth"
       tls: {}
-
-    jenkins-redirect:
-      rule: "Host(`jenkins.webnsurf.com`)"
-      entryPoints:
-        - "web"
-      service: "jenkins"
-      middlewares:
-        - "https-redirect"
-
-    jenkins:
-      rule: "Host(`jenkins.webnsurf.com`)"
-      entryPoints:
-        - "websecure"
-      service: "jenkins"
-      tls: {}
-
-
-  # --- SERVICES --- #
-  services:
-    jenkins:
-      loadBalancer:
-        servers:
-          - url: "http://172.17.0.1:8080"
         
 
   # --- MIDDLEWARES --- #
